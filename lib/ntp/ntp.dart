@@ -2,7 +2,7 @@ part of ntp;
 
 class NTP {
   /// Return NTP delay in milliseconds
-  static Future<int> getNtpOffset({String lookUpAddress = 'pool.ntp.org', int port = 123, DateTime localTime}) async {
+  static Future<int> getNtpOffset({String lookUpAddress = 'pool.ntp.org', int port = 123, DateTime? localTime}) async {
     final List<InternetAddress> addressArray = await InternetAddress.lookup(lookUpAddress);
 
     InternetAddress clientAddress = InternetAddress.anyIPv4;
@@ -14,14 +14,14 @@ class NTP {
     final RawDatagramSocket _datagramSocket = await RawDatagramSocket.bind(clientAddress, 0, reuseAddress: true);
 
     final _NTPMessage _ntpMessage = _NTPMessage();
-    final List<int> buffer = _ntpMessage.toByteArray();
+    final List<int?> buffer = _ntpMessage.toByteArray();
     final DateTime time = localTime ?? DateTime.now();
     _ntpMessage.encodeTimestamp(buffer, 40, (time.millisecondsSinceEpoch / 1000.0) + _ntpMessage.timeToUtc);
 
     // Send buffer packet to the address from [addressArray] and port [port]
-    _datagramSocket.send(buffer, addressArray.first, port);
+    _datagramSocket.send(buffer as List<int>, addressArray.first, port);
     // Receive packet from socket
-    Datagram packet;
+    Datagram? packet;
 
     try {
       await _datagramSocket.firstWhere((RawSocketEvent event) {
@@ -41,7 +41,7 @@ class NTP {
       return Future<int>.error('Error: Packet is empty!');
     }
 
-    final int offset = _parseData(packet.data, time);
+    final int offset = _parseData(packet!.data, time);
     return offset;
   }
 

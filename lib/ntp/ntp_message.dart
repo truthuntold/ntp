@@ -43,7 +43,7 @@ class _NTPMessage {
   ///
   /// If byte array (raw NTP packet) is passed to constructor then the
   /// data is filled from a raw NTP packet.
-  _NTPMessage([List<int> array]) {
+  _NTPMessage([List<int>? array]) {
     if (array != null) {
       _leapIndicator = array[0] >> 6 & 0x3;
       _version = array[0] >> 3 & 0x7;
@@ -52,17 +52,10 @@ class _NTPMessage {
       _pollInterval = array[2];
       _precision = array[3];
 
-      _rootDelay = ((array[4] * 256) +
-              unsignedByteToShort(array[5]) +
-              (unsignedByteToShort(array[6]) / 256) +
-              (unsignedByteToShort(array[7]) / 65536))
-          .toInt();
+      _rootDelay = ((array[4] * 256) + unsignedByteToShort(array[5]) + (unsignedByteToShort(array[6]) / 256) + (unsignedByteToShort(array[7]) / 65536)).toInt();
 
-      _rootDispersion = ((unsignedByteToShort(array[8]) * 256) +
-              unsignedByteToShort(array[9]) +
-              (unsignedByteToShort(array[10]) / 256) +
-              (unsignedByteToShort(array[11]) / 65536))
-          .toInt();
+      _rootDispersion =
+          ((unsignedByteToShort(array[8]) * 256) + unsignedByteToShort(array[9]) + (unsignedByteToShort(array[10]) / 256) + (unsignedByteToShort(array[11]) / 65536)).toInt();
 
       _referenceIdentifier[0] = array[12];
       _referenceIdentifier[1] = array[13];
@@ -206,8 +199,8 @@ class _NTPMessage {
   double get transmitTimestamp => _transmitTimestamp;
 
   /// This method constructs the data bytes of a raw NTP packet.
-  List<int> toByteArray() {
-    final List<int> rawNtp = List<int>(48);
+  List<int?> toByteArray() {
+    final List<int?> rawNtp = List<int?>.filled(48, null, growable: false);
 
     /// All bytes are set to 0
     rawNtp.fillRange(0, 48, 0);
@@ -268,7 +261,7 @@ class _NTPMessage {
   }
 
   /// Encodes a timestamp in the specified position in the message
-  void encodeTimestamp(List<int> array, int pointer, double timestamp) {
+  void encodeTimestamp(List<int?> array, int pointer, double timestamp) {
     /// Converts a double into a 64-bit fixed point
     for (int i = 0; i < 8; i++) {
       /// 2^24, 2^16, 2^8, .. 2^-32
@@ -278,7 +271,7 @@ class _NTPMessage {
       array[pointer + i] = timestamp ~/ base;
 
       /// Subtract captured value from remaining total
-      timestamp = timestamp - (unsignedByteToShort(array[pointer + i]) * base);
+      timestamp = timestamp - (unsignedByteToShort(array[pointer + i]!) * base);
     }
 
     /// From RFC 2030: It is advisable to fill the non-significant
