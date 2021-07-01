@@ -200,7 +200,7 @@ class _NTPMessage {
 
   /// This method constructs the data bytes of a raw NTP packet.
   List<int?> toByteArray() {
-    final List<int?> rawNtp = List<int?>.filled(48, null, growable: false);
+    final List<int> rawNtp = List<int>.filled(48, 0, growable: false);
 
     /// All bytes are set to 0
     rawNtp.fillRange(0, 48, 0);
